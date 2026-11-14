@@ -10,10 +10,14 @@ Use Node.js 24 and npm. Run these commands from the repository root:
 
 ```sh
 npm ci
+npm run lint
+npm run format:check
 npm run check
 npm run build
 npm test
 ```
+
+Use `npm run format` to format source files with Biome.
 
 Open `dist/index.html` in a browser for the interactive HTML demo.
 

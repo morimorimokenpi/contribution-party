@@ -11,19 +11,25 @@ test('both fragments use the same compiled game and preserve their data', () => 
     sample.script.replace(`const pinballRootId = ${JSON.stringify(sample.rootId)};`, 'const pinballRootId = "";'),
     real.script.replace(`const pinballRootId = ${JSON.stringify(real.rootId)};`, 'const pinballRootId = "";'),
   );
-  for (const [name, fixture] of [['sample', sample], ['real', real]]) {
+  for (const [name, fixture] of [
+    ['sample', sample],
+    ['real', real],
+  ]) {
     const data = JSON.parse(fs.readFileSync(new URL('../data/' + name + '.json', import.meta.url), 'utf8'));
     assert.deepEqual(fixture.data, data);
   }
-  assert.equal(sample.data.levels.flat().filter(level => level > 0).length, 371);
-  assert.equal(sample.data.levels.flat().reduce((sum, level) => sum + POINTS[level], 0), 1764);
+  assert.equal(sample.data.levels.flat().filter((level) => level > 0).length, 371);
+  assert.equal(
+    sample.data.levels.flat().reduce((sum, level) => sum + POINTS[level], 0),
+    1764,
+  );
 });
 
 test('the real snapshot preserves API weekdays, contribution levels, and totals', () => {
   const raw = JSON.parse(fs.readFileSync(new URL('../data/real-source.json', import.meta.url), 'utf8'));
   const data = readFixture('real').data;
   const calendar = raw.data.user.contributionsCollection.contributionCalendar;
-  const days = calendar.weeks.flatMap(week => week.contributionDays);
+  const days = calendar.weeks.flatMap((week) => week.contributionDays);
   const levelNumbers = {
     NONE: 0,
     FIRST_QUARTILE: 1,
@@ -33,7 +39,7 @@ test('the real snapshot preserves API weekdays, contribution levels, and totals'
   };
   const histogram = [0, 0, 0, 0, 0];
   const dates = new Set();
-  const levels = calendar.weeks.map(week => {
+  const levels = calendar.weeks.map((week) => {
     const result = Array(7).fill(null);
     for (const day of week.contributionDays) {
       assert(Object.hasOwn(levelNumbers, day.contributionLevel));
@@ -52,7 +58,10 @@ test('the real snapshot preserves API weekdays, contribution levels, and totals'
   assert.equal(days.length, 365);
   assert.equal(calendar.weeks.length, 53);
   assert.deepEqual(histogram, [314, 34, 11, 0, 6]);
-  assert.equal(days.reduce((sum, day) => sum + day.contributionCount, 0), 384);
+  assert.equal(
+    days.reduce((sum, day) => sum + day.contributionCount, 0),
+    384,
+  );
   assert.equal(calendar.totalContributions, 384);
   for (let index = 1; index < days.length; index++) {
     assert.equal(new Date(days[index].date) - new Date(days[index - 1].date), 86400000);
@@ -63,13 +72,19 @@ test('the real snapshot preserves API weekdays, contribution levels, and totals'
   assert.equal(data.retrievedAt, '2026-11-08');
   assert.equal(data.activeDays, 51);
   assert.equal(data.maxPoints, 127);
-  assert.equal(histogram.reduce((sum, count, level) => sum + count * POINTS[level], 0), 127);
+  assert.equal(
+    histogram.reduce((sum, count, level) => sum + count * POINTS[level], 0),
+    127,
+  );
   const game = createGame('real');
   assert.equal(game.state().cells.length, 365);
-  assert.equal(game.state().cells.some(cell => cell.level === null), false);
+  assert.equal(
+    game.state().cells.some((cell) => cell.level === null),
+    false,
+  );
   assert.equal(game.state().total, 51);
   assert.equal(game.state().remaining, 51);
-  assert.equal(game.state().cells.filter(cell => cell.level === 0).length, 314);
+  assert.equal(game.state().cells.filter((cell) => cell.level === 0).length, 314);
   assert.equal(game.state().autoPartyScore, 500);
 });
 

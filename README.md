@@ -34,17 +34,17 @@ The preview uses a full grid and starts with five balls. Animations start with o
    </picture>
    ```
 
-Run the workflow once before the images can appear. The example uses `@main`; use a commit SHA to pin a specific version.
+Run the workflow once before the images can appear. The example uses `@v0.1.0`; use a commit SHA to pin the exact code.
 
 ## Configuration
 
-| Action input | Default | Description |
-| --- | --- | --- |
-| `data_file` | Required | Path to your contribution JSON |
-| `config_file` | Bundled configuration | Path to a custom configuration JSON |
-| `output_dir` | `dist` | Directory for generated SVGs |
-| `seed` | `1` | Random seed, from 0 to 4294967295 |
-| `initial_balls` | `1` | Start with `1` or `5` balls |
+| Action input    | Default               | Description                         |
+| --------------- | --------------------- | ----------------------------------- |
+| `data_file`     | Required              | Path to your contribution JSON      |
+| `config_file`   | Bundled configuration | Path to a custom configuration JSON |
+| `output_dir`    | `dist`                | Directory for generated SVGs        |
+| `seed`          | `1`                   | Random seed, from 0 to 4294967295   |
+| `initial_balls` | `1`                   | Start with `1` or `5` balls         |
 
 Paths are relative to your repository. Outputs `dark-svg` and `light-svg` contain the absolute paths to the generated files.
 

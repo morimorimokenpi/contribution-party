@@ -18,7 +18,7 @@ function resolveBallCollision(a: CollisionBody, b: CollisionBody, radius: number
   const relativeSpeed = Math.hypot(relativeX, relativeY);
   const nx = distance > 0 ? dx / distance : relativeSpeed > 0 ? -relativeX / relativeSpeed : 1;
   const ny = distance > 0 ? dy / distance : relativeSpeed > 0 ? -relativeY / relativeSpeed : 0;
-  const separation = (diameter - distance) / 2 + .000001;
+  const separation = (diameter - distance) / 2 + 0.000001;
   a.x -= nx * separation;
   a.y -= ny * separation;
   b.x += nx * separation;

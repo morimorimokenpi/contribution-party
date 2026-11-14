@@ -12,10 +12,20 @@ export function readFixture(name) {
   const gameScript = scripts.find(([, attributes]) => !attributes.includes('application/json'));
   const rootTag = html.match(/<[^>]+\bdata-pinball-root\b[^>]*>/)?.[0];
   const rootId = rootTag?.match(/\bid="([^"]+)"/)?.[1];
-  assert(dataScript && configScript && gameScript, 'The generated fragment includes data, configuration, and game scripts');
+  assert(
+    dataScript && configScript && gameScript,
+    'The generated fragment includes data, configuration, and game scripts',
+  );
   assert(rootId, 'The generated fragment has an identified root element');
   const collisionDemo = /\bdata-pinball-collision-demo="true"/.test(rootTag);
-  return { html, rootId, collisionDemo, data: JSON.parse(dataScript[2]), config: JSON.parse(configScript[2]), script: gameScript[2] };
+  return {
+    html,
+    rootId,
+    collisionDemo,
+    data: JSON.parse(dataScript[2]),
+    config: JSON.parse(configScript[2]),
+    script: gameScript[2],
+  };
 }
 
 export function createGame(name, options = {}) {
@@ -23,7 +33,8 @@ export function createGame(name, options = {}) {
   const data = Object.hasOwn(options, 'data') ? options.data : fixture.data;
   const config = Object.hasOwn(options, 'config') ? options.config : fixture.config;
   assert.equal(fixture.script.match(/applyState\(saved\);/g)?.length, 1, 'The game has one initialization entry point');
-  const collisionInstrumentation = options.recordCollisions ? `
+  const collisionInstrumentation = options.recordCollisions
+    ? `
     const originalCollisionSolver = resolveBallCollision;
     resolveBallCollision = (a, b, radius) => {
       const snapshot = body => ({ x: body.x, y: body.y, vx: body.vx, vy: body.vy });
@@ -32,10 +43,12 @@ export function createGame(name, options = {}) {
       if (reflected) root.recordCollision({ before, after: [snapshot(a), snapshot(b)] });
       return reflected;
     };
-  ` : '';
+  `
+    : '';
   const instrumented = fixture.script.replace(
     'applyState(saved);',
-    collisionInstrumentation + 'applyState(saved); root.inspect = () => ({ themeMode, palette, colors, lightRgb, points, autoPartyScore, width, height, radius, speed, cells, total, remaining, score, finalScore, nextMilestone, autoPartyTriggered, superPartyTriggered, manualParty, pendingAwards, award, confetti, sparks, clubTime, clubIntensity, balls, running, cleared, lastTime }); root.testing = { collide, tick, draw, hasEffects, showFinalScore, sync };',
+    collisionInstrumentation +
+      'applyState(saved); root.inspect = () => ({ themeMode, palette, colors, lightRgb, points, autoPartyScore, width, height, radius, speed, cells, total, remaining, score, finalScore, nextMilestone, autoPartyTriggered, superPartyTriggered, manualParty, pendingAwards, award, confetti, sparks, clubTime, clubIntensity, balls, running, cleared, lastTime }); root.testing = { collide, tick, draw, hasEffects, showFinalScore, sync };',
   );
   assert.notEqual(instrumented, fixture.script, 'The VM instrumentation matches the compiled game initialization');
 
@@ -57,8 +70,12 @@ export function createGame(name, options = {}) {
     const properties = new Map();
     return {
       properties,
-      setProperty(name, value) { properties.set(name, value); },
-      getPropertyValue(name) { return properties.get(name) ?? ''; },
+      setProperty(name, value) {
+        properties.set(name, value);
+      },
+      getPropertyValue(name) {
+        return properties.get(name) ?? '';
+      },
     };
   }
   const nodes = {
@@ -70,7 +87,9 @@ export function createGame(name, options = {}) {
     '[data-pinball-award]': { hidden: true, style: {} },
     '[data-pinball-award-caption]': { hidden: true },
     '[data-pinball-award-title]': {
-      get textContent() { return title; },
+      get textContent() {
+        return title;
+      },
       set textContent(value) {
         title = value;
         if (value) awardLog.push(value);
@@ -99,13 +118,25 @@ export function createGame(name, options = {}) {
   }
   const context = {};
   for (const method of [
-    'setTransform', 'clearRect', 'fillRect', 'beginPath', 'roundRect',
-    'fill', 'arc', 'strokeRect', 'stroke', 'save', 'restore',
-    'moveTo', 'lineTo', 'closePath',
+    'setTransform',
+    'clearRect',
+    'fillRect',
+    'beginPath',
+    'roundRect',
+    'fill',
+    'arc',
+    'strokeRect',
+    'stroke',
+    'save',
+    'restore',
+    'moveTo',
+    'lineTo',
+    'closePath',
   ]) {
     context[method] = (...values) => {
       assert(values.every(Number.isFinite), 'Canvas coordinates remain finite');
-      if (options.recordPaint) paintLog.push({ method, values, fillStyle: context.fillStyle, strokeStyle: context.strokeStyle });
+      if (options.recordPaint)
+        paintLog.push({ method, values, fillStyle: context.fillStyle, strokeStyle: context.strokeStyle });
     };
   }
   for (const method of ['createLinearGradient', 'createRadialGradient']) {
@@ -132,7 +163,9 @@ export function createGame(name, options = {}) {
     clientWidth: options.width ?? 880,
     style: style(),
     dataset: fixture.collisionDemo ? { pinballCollisionDemo: 'true' } : {},
-    recordCollision(collision) { collisionLog.push(collision); },
+    recordCollision(collision) {
+      collisionLog.push(collision);
+    },
     querySelector(selector) {
       assert(Object.hasOwn(nodes, selector), 'The DOM mock contains ' + selector);
       return nodes[selector];
@@ -143,9 +176,12 @@ export function createGame(name, options = {}) {
   function matchMedia(query) {
     if (!mediaQueries.has(query)) {
       const listeners = new Set();
-      const matches = query === '(prefers-reduced-motion: reduce)'
-        ? options.reducedMotion ?? false
-        : query === '(prefers-color-scheme: dark)' ? options.systemDark ?? false : false;
+      const matches =
+        query === '(prefers-reduced-motion: reduce)'
+          ? (options.reducedMotion ?? false)
+          : query === '(prefers-color-scheme: dark)'
+            ? (options.systemDark ?? false)
+            : false;
       mediaQueries.set(query, {
         matches,
         media: query,
@@ -176,7 +212,9 @@ export function createGame(name, options = {}) {
   const browserWindow = {
     devicePixelRatio: 2,
     matchMedia,
-    addEventListener: (event, callback) => { globalHandlers[event] = callback; },
+    addEventListener: (event, callback) => {
+      globalHandlers[event] = callback;
+    },
     openai: {
       widgetState: { modelContent: options.saved },
       setWidgetState(value) {
@@ -211,13 +249,17 @@ export function createGame(name, options = {}) {
       },
     },
     window: browserWindow,
-    ResizeObserver: class { observe() {} },
+    ResizeObserver: class {
+      observe() {}
+    },
     requestAnimationFrame(callback) {
       const id = ++frameId;
       frames.set(id, callback);
       return id;
     },
-    cancelAnimationFrame(id) { frames.delete(id); },
+    cancelAnimationFrame(id) {
+      frames.delete(id);
+    },
   });
 
   return {
@@ -233,7 +275,9 @@ export function createGame(name, options = {}) {
     page,
     state: () => root.inspect(),
     hasFrame: () => frames.size > 0,
-    click(name) { controlHandlers[name](); },
+    click(name) {
+      controlHandlers[name]();
+    },
     selectTheme(value) {
       nodes['[data-pinball-theme]'].value = value;
       assert(themeChange);
@@ -260,23 +304,35 @@ export function createGame(name, options = {}) {
 
 export function hitCell(game, cell) {
   const before = game.state().score;
-  assert.equal(game.root.testing.collide({
-    x: cell.x + cell.size / 2,
-    y: cell.y + cell.size / 2,
-    vx: 10,
-    vy: -10,
-    trail: [],
-  }, cell), true);
+  assert.equal(
+    game.root.testing.collide(
+      {
+        x: cell.x + cell.size / 2,
+        y: cell.y + cell.size / 2,
+        vx: 10,
+        vy: -10,
+        trail: [],
+      },
+      cell,
+    ),
+    true,
+  );
   assert.equal(game.state().score, before + game.state().points[cell.level]);
 }
 
 export function reachScore(game, target) {
   while (game.state().score < target) {
     const needed = target - game.state().score;
-    const level = [4, 3, 2, 1].find(candidate => game.state().points[candidate] <= needed
-      && game.state().cells.some(cell => cell.alive && cell.level === candidate));
+    const level = [4, 3, 2, 1].find(
+      (candidate) =>
+        game.state().points[candidate] <= needed &&
+        game.state().cells.some((cell) => cell.alive && cell.level === candidate),
+    );
     assert(level, 'Available grass can reach ' + target + ' points');
-    hitCell(game, game.state().cells.find(cell => cell.alive && cell.level === level));
+    hitCell(
+      game,
+      game.state().cells.find((cell) => cell.alive && cell.level === level),
+    );
   }
   assert.equal(game.state().score, target);
 }

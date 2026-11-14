@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  awards, clearAll, createGame, finishFrames, freezeBalls, hitCell, reachScore, readFixture,
+  awards,
+  clearAll,
+  createGame,
+  finishFrames,
+  freezeBalls,
+  hitCell,
+  reachScore,
+  readFixture,
 } from './harness.mjs';
 
-const normalizeLabel = label => label.replace(/\s+/g, ' ').trim();
-const energy = balls => balls.reduce((sum, ball) => sum + ball.vx ** 2 + ball.vy ** 2, 0);
+const normalizeLabel = (label) => label.replace(/\s+/g, ' ').trim();
+const energy = (balls) => balls.reduce((sum, ball) => sum + ball.vx ** 2 + ball.vy ** 2, 0);
 
 function insideWalls(game) {
   const state = game.state();
@@ -42,13 +49,13 @@ for (const reducedMotion of [false, true]) {
     reachScore(game, 1000);
     assert.equal(game.state().balls.length, 5);
     assert.equal(game.state().superPartyTriggered, false);
-    assert.equal(awards(game).filter(award => award.threshold === 1000).length, 0);
-    const cell = game.state().cells.find(cell => cell.alive && cell.level === 1);
+    assert.equal(awards(game).filter((award) => award.threshold === 1000).length, 0);
+    const cell = game.state().cells.find((cell) => cell.alive && cell.level === 1);
     hitCell(game, cell);
     assert.equal(game.state().score, 1001);
     assert.equal(game.state().balls.length, 10);
     assert.equal(game.state().superPartyTriggered, true);
-    assert.equal(awards(game).filter(award => award.threshold === 1000).length, 1);
+    assert.equal(awards(game).filter((award) => award.threshold === 1000).length, 1);
     const registered = awards(game).length;
     const saves = game.saves.length;
     game.click('party');
@@ -66,7 +73,11 @@ for (const reducedMotion of [false, true]) {
     assert.equal(game.state().clubTime > 0, !reducedMotion);
     if (reducedMotion) assert.equal(game.state().confetti.length, 0);
     game.click('play');
-    const paused = JSON.stringify({ award: game.state().award, time: game.state().clubTime, intensity: game.state().clubIntensity });
+    const paused = JSON.stringify({
+      award: game.state().award,
+      time: game.state().clubTime,
+      intensity: game.state().clubIntensity,
+    });
     assert.equal(game.hasFrame(), false);
     const beforeRestoreSaves = game.saves.length;
     const beforeRestoreStorage = game.storageWrites.length;
@@ -75,13 +86,19 @@ for (const reducedMotion of [false, true]) {
     assert.equal(game.state().balls.length, 10);
     assert.equal(game.state().superPartyTriggered, true);
     assert.equal(game.state().manualParty, false);
-    assert.equal(JSON.stringify({ award: game.state().award, time: game.state().clubTime, intensity: game.state().clubIntensity }), paused);
+    assert.equal(
+      JSON.stringify({ award: game.state().award, time: game.state().clubTime, intensity: game.state().clubIntensity }),
+      paused,
+    );
     assert.equal(game.saves.length, beforeRestoreSaves);
     assert.equal(game.storageWrites.length, beforeRestoreStorage);
     game.click('play');
     game.advance(1000);
     let time = 1000;
-    while (normalizeLabel(game.nodes['[data-pinball-award-title]'].textContent) !== 'SUPER PARTY TIME' && time < 10000) {
+    while (
+      normalizeLabel(game.nodes['[data-pinball-award-title]'].textContent) !== 'SUPER PARTY TIME' &&
+      time < 10000
+    ) {
       time += 50;
       game.advance(time);
     }
@@ -95,9 +112,11 @@ for (const reducedMotion of [false, true]) {
     assert.equal(game.state().clubIntensity, 0);
     assert.equal(game.state().running, false);
     assert.equal(game.hasFrame(), false);
-    assert.equal(game.awardLog.map(normalizeLabel).filter(label => label === 'SUPER PARTY TIME').length, 1);
-    assert.deepEqual(game.awardLog.filter(label => label.endsWith('OVER')),
-      Array.from({ length: 17 }, (_, index) => (index + 1) * 100 + ' OVER'));
+    assert.equal(game.awardLog.map(normalizeLabel).filter((label) => label === 'SUPER PARTY TIME').length, 1);
+    assert.deepEqual(
+      game.awardLog.filter((label) => label.endsWith('OVER')),
+      Array.from({ length: 17 }, (_, index) => (index + 1) * 100 + ' OVER'),
+    );
     game.click('restart');
     assert.equal(game.state().score, 0);
     assert.equal(game.state().finalScore, null);
@@ -111,7 +130,12 @@ for (const reducedMotion of [false, true]) {
 }
 
 test('one scoring event can promote a single ball through both party phases in order', () => {
-  const config = { ...readFixture('sample').config, superPartyScore: 1000, ballCollisions: true, points: [0, 1001, 3, 5, 10] };
+  const config = {
+    ...readFixture('sample').config,
+    superPartyScore: 1000,
+    ballCollisions: true,
+    points: [0, 1001, 3, 5, 10],
+  };
   const game = createGame('sample', { config, data: { levels: [[1]] } });
   assert.equal(game.state().balls.length, 1);
   hitCell(game, game.state().cells[0]);
@@ -119,13 +143,13 @@ test('one scoring event can promote a single ball through both party phases in o
   assert.equal(game.state().balls.length, 10);
   assert.equal(game.state().autoPartyTriggered, true);
   assert.equal(game.state().superPartyTriggered, true);
-  assert.equal(awards(game).filter(award => award.threshold === 1000).length, 1);
+  assert.equal(awards(game).filter((award) => award.threshold === 1000).length, 1);
   game.click('play');
   finishFrames(game);
   const labels = game.awardLog.map(normalizeLabel);
   assert.equal(labels[0], 'PARTY TIME!');
   assert.equal(labels[1], 'SUPER PARTY TIME');
-  assert.equal(labels.filter(label => label === 'SUPER PARTY TIME').length, 1);
+  assert.equal(labels.filter((label) => label === 'SUPER PARTY TIME').length, 1);
   assert.equal(game.state().finalScore, 1001);
 });
 
@@ -152,14 +176,14 @@ test('the overlapping ten-ball spawn stays finite, inside walls, and conserves e
   const initialEnergy = energy(game.state().balls);
   game.click('play');
   for (let tick = 0; tick < 100; tick++) {
-    game.advance(tick * 1000 / 60);
+    game.advance((tick * 1000) / 60);
     assert.equal(game.state().balls.length, 10);
     insideWalls(game);
     assert(Math.abs(energy(game.state().balls) - initialEnergy) <= initialEnergy * 1e-8);
   }
 });
 
-test('SUPER PARTY natural play clears all grass and finishes every queued effect', t => {
+test('SUPER PARTY natural play clears all grass and finishes every queued effect', (t) => {
   const game = createGame('super-party', { seed: 1 });
   const initialEnergy = energy(game.state().balls);
   let maximumSpeed = 0;
@@ -174,7 +198,10 @@ test('SUPER PARTY natural play clears all grass and finishes every queued effect
     const state = game.state();
     assert.equal(state.balls.length, state.score > 1000 ? 10 : 5);
     assert.equal(state.superPartyTriggered, state.score > 1000);
-    assert.equal(state.score, state.cells.reduce((sum, cell) => sum + (cell.alive ? 0 : state.points[cell.level]), 0));
+    assert.equal(
+      state.score,
+      state.cells.reduce((sum, cell) => sum + (cell.alive ? 0 : state.points[cell.level]), 0),
+    );
     const expectedEnergy = initialEnergy + (state.balls.length - 5) * state.speed ** 2;
     const drift = Math.abs(energy(state.balls) - expectedEnergy) / expectedEnergy;
     maximumRelativeDrift = Math.max(maximumRelativeDrift, drift);
@@ -194,8 +221,15 @@ test('SUPER PARTY natural play clears all grass and finishes every queued effect
       game.click('play');
       time += pauseDuration;
       game.advance(time);
-      assert.equal(JSON.stringify({ intensity: game.state().clubIntensity, phase: game.state().clubTime, sparks: game.state().sparks }),
-        fading, 'Paused wall-clock time does not advance the clear lighting fade or particles');
+      assert.equal(
+        JSON.stringify({
+          intensity: game.state().clubIntensity,
+          phase: game.state().clubTime,
+          sparks: game.state().sparks,
+        }),
+        fading,
+        'Paused wall-clock time does not advance the clear lighting fade or particles',
+      );
     }
   }
   const final = game.state();
@@ -209,13 +243,22 @@ test('SUPER PARTY natural play clears all grass and finishes every queued effect
   assert.equal(final.sparks.length, 0);
   assert.equal(final.running, false);
   assert.equal(game.hasFrame(), false);
-  assert.equal(game.awardLog.map(normalizeLabel).filter(label => label === 'SUPER PARTY TIME').length, 1);
-  assert.deepEqual(game.awardLog.filter(label => label.endsWith('OVER')),
-    Array.from({ length: 17 }, (_, index) => (index + 1) * 100 + ' OVER'));
+  assert.equal(game.awardLog.map(normalizeLabel).filter((label) => label === 'SUPER PARTY TIME').length, 1);
+  assert.deepEqual(
+    game.awardLog.filter((label) => label.endsWith('OVER')),
+    Array.from({ length: 17 }, (_, index) => (index + 1) * 100 + ' OVER'),
+  );
   assert.notEqual(clearedAt, null);
   const finalDelay = (elapsed - clearedAt - pauseDuration) / 1000;
-  assert(finalDelay >= .9 && finalDelay <= 1.15, 'The clear lighting fade finishes in about one second');
-  t.diagnostic('Settled at ' + ((elapsed - pauseDuration) / 1000).toFixed(1) + ' active simulated seconds; clear-to-final delay '
-    + finalDelay.toFixed(3) + ' seconds; maximum ball speed ' + maximumSpeed.toFixed(2)
-    + '; maximum relative energy drift ' + maximumRelativeDrift.toExponential(2));
+  assert(finalDelay >= 0.9 && finalDelay <= 1.15, 'The clear lighting fade finishes in about one second');
+  t.diagnostic(
+    'Settled at ' +
+      ((elapsed - pauseDuration) / 1000).toFixed(1) +
+      ' active simulated seconds; clear-to-final delay ' +
+      finalDelay.toFixed(3) +
+      ' seconds; maximum ball speed ' +
+      maximumSpeed.toFixed(2) +
+      '; maximum relative energy drift ' +
+      maximumRelativeDrift.toExponential(2),
+  );
 });

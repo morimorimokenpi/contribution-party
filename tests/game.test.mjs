@@ -1,8 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  POINTS, createGame, readFixture, hitCell, reachScore,
-  awards, freezeBalls, clearAll, finishFrames,
+  POINTS,
+  createGame,
+  readFixture,
+  hitCell,
+  reachScore,
+  awards,
+  freezeBalls,
+  clearAll,
+  finishFrames,
 } from './harness.mjs';
 
 for (const name of ['sample', 'real']) {
@@ -10,8 +17,10 @@ for (const name of ['sample', 'real']) {
     for (const useParty of [false, true]) {
       test(name + ' natural play, seed ' + seed + ', ' + (useParty ? 'manual party' : 'single ball'), () => {
         const game = createGame(name, { seed, width: useParty ? 736 : 320 });
-        const levels = readFixture(name).data.levels.flat().filter(level => level !== null);
-        const total = levels.filter(level => level > 0).length;
+        const levels = readFixture(name)
+          .data.levels.flat()
+          .filter((level) => level !== null);
+        const total = levels.filter((level) => level > 0).length;
         const maxScore = levels.reduce((sum, level) => sum + POINTS[level], 0);
         game.click(useParty ? 'party' : 'play');
         const velocities = [];
@@ -21,7 +30,7 @@ for (const name of ['sample', 'real']) {
           if (Math.round(time) % 1000 >= 34) continue;
           const state = game.state();
           assert(state.remaining <= previousRemaining && state.remaining >= 0);
-          assert.equal(state.remaining, state.cells.filter(cell => cell.alive).length);
+          assert.equal(state.remaining, state.cells.filter((cell) => cell.alive).length);
           const expected = state.cells.reduce((sum, cell) => sum + (cell.alive ? 0 : POINTS[cell.level]), 0);
           assert.equal(state.score, expected);
           assert.equal(state.nextMilestone, Math.max(100, Math.ceil(state.score / 100) * 100));
@@ -55,13 +64,19 @@ for (const name of ['sample', 'real']) {
           { length: Math.max(0, Math.ceil(maxScore / 100) - 1) },
           (_, index) => (index + 1) * 100 + ' OVER',
         );
-        assert.deepEqual(game.awardLog.filter(label => label.endsWith('OVER')), expectedOver);
-        assert.equal(game.awardLog.filter(label => label === 'PARTY TIME!').length, useParty || maxScore > 500 ? 1 : 0);
+        assert.deepEqual(
+          game.awardLog.filter((label) => label.endsWith('OVER')),
+          expectedOver,
+        );
+        assert.equal(
+          game.awardLog.filter((label) => label === 'PARTY TIME!').length,
+          useParty || maxScore > 500 ? 1 : 0,
+        );
         assert.equal(Number(game.awardLog.at(-1).replace(/\D/g, '')), maxScore);
         assert.equal(game.nodes['[data-pinball-award-caption]'].textContent, 'FINAL SCORE');
         assert.equal(game.nodes['[data-pinball-award-caption]'].hidden, false);
         assert.equal(game.nodes['[data-pinball-play]'].disabled, true);
-        assert.equal(game.nodes['[data-pinball-play]'].textContent, '終了');
+        assert.equal(game.nodes['[data-pinball-play]'].textContent, 'Finished');
       });
     }
   }
@@ -71,24 +86,38 @@ test('strict score boundaries register each OVER once and add four balls after 5
   const game = createGame('sample');
   for (const threshold of [100, 200, 300]) {
     reachScore(game, threshold);
-    assert.equal(awards(game).some(award => award.threshold === threshold), false);
-    hitCell(game, game.state().cells.find(cell => cell.alive && cell.level === 1));
-    assert.equal(awards(game).filter(award => award.threshold === threshold).length, 1);
+    assert.equal(
+      awards(game).some((award) => award.threshold === threshold),
+      false,
+    );
+    hitCell(
+      game,
+      game.state().cells.find((cell) => cell.alive && cell.level === 1),
+    );
+    assert.equal(awards(game).filter((award) => award.threshold === threshold).length, 1);
   }
   reachScore(game, 500);
   assert.equal(game.state().balls.length, 1);
   assert.equal(game.state().autoPartyTriggered, false);
-  assert.equal(awards(game).some(award => award.threshold === 500), false);
-  const cell = game.state().cells.find(candidate => candidate.alive && candidate.level === 1);
+  assert.equal(
+    awards(game).some((award) => award.threshold === 500),
+    false,
+  );
+  const cell = game.state().cells.find((candidate) => candidate.alive && candidate.level === 1);
   hitCell(game, cell);
   assert.equal(game.state().score, 501);
   assert.equal(game.state().balls.length, 5);
   assert.equal(game.state().autoPartyTriggered, true);
   assert.equal(game.state().manualParty, false);
   const registered = awards(game);
-  assert.deepEqual(registered.filter(award => award.kind === 'over').map(award => award.threshold), [100, 200, 300, 400, 500]);
-  assert.equal(registered.filter(award => award.kind === 'party').length, 1);
-  assert(registered.findIndex(award => award.kind === 'party') < registered.findIndex(award => award.threshold === 500));
+  assert.deepEqual(
+    registered.filter((award) => award.kind === 'over').map((award) => award.threshold),
+    [100, 200, 300, 400, 500],
+  );
+  assert.equal(registered.filter((award) => award.kind === 'party').length, 1);
+  assert(
+    registered.findIndex((award) => award.kind === 'party') < registered.findIndex((award) => award.threshold === 500),
+  );
   assert.equal(game.root.testing.collide({ x: cell.x + 6, y: cell.y + 6, vx: 10, vy: -10 }, cell), false);
   assert.equal(game.state().score, 501, 'A consumed cell cannot score twice');
 });
@@ -101,7 +130,7 @@ test('manual party clicks and host restoration cannot duplicate balls or reset a
   assert.equal(manual.saves.length, saves);
   reachScore(manual, 501);
   assert.equal(manual.state().balls.length, 5);
-  assert.equal(awards(manual).filter(award => award.kind === 'party').length, 1);
+  assert.equal(awards(manual).filter((award) => award.kind === 'party').length, 1);
   assert.equal(manual.state().autoPartyTriggered, true);
 
   const automatic = createGame('sample');
@@ -145,7 +174,7 @@ for (const reducedMotion of [false, true]) {
     game.advance(1050);
     assert(game.state().clubIntensity > 0);
     assert.equal(game.state().clubTime > 0, !reducedMotion);
-    const beamGeometry = game.gradients.filter(entry => entry.method === 'createLinearGradient').slice(-3);
+    const beamGeometry = game.gradients.filter((entry) => entry.method === 'createLinearGradient').slice(-3);
     assert.equal(beamGeometry.length, 3);
     game.click('play');
     const paused = JSON.stringify({
@@ -158,18 +187,25 @@ for (const reducedMotion of [false, true]) {
     assert.equal(game.hasFrame(), false);
     game.click('play');
     game.advance(5000);
-    assert.equal(JSON.stringify({
-      time: game.state().clubTime,
-      intensity: game.state().clubIntensity,
-      award: game.state().award,
-      pending: game.state().pendingAwards,
-      confetti: game.state().confetti,
-    }), paused, 'Paused wall-clock time does not advance effects');
+    assert.equal(
+      JSON.stringify({
+        time: game.state().clubTime,
+        intensity: game.state().clubIntensity,
+        award: game.state().award,
+        pending: game.state().pendingAwards,
+        confetti: game.state().confetti,
+      }),
+      paused,
+      'Paused wall-clock time does not advance effects',
+    );
     game.advance(5050);
     if (reducedMotion) {
       assert.equal(game.state().clubTime, 0);
       assert.equal(game.state().confetti.length, 0);
-      assert.deepEqual(game.gradients.filter(entry => entry.method === 'createLinearGradient').slice(-3), beamGeometry);
+      assert.deepEqual(
+        game.gradients.filter((entry) => entry.method === 'createLinearGradient').slice(-3),
+        beamGeometry,
+      );
     }
     assert.equal(game.state().finalScore, null);
     clearAll(game);

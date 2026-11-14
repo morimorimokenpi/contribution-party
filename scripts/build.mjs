@@ -23,7 +23,22 @@ const compilation = spawnSync(process.execPath, [compiler, '--project', path.joi
 if (compilation.error) throw compilation.error;
 if (compilation.status !== 0) process.exit(compilation.status ?? 1);
 
-const [template, settingsScript, contributionsScript, physicsScript, celebrationScript, compiledScript, animationScript, svgScript, svgMotionScript, svgLightsScript, realText, sampleText, configText, licenseText] = await Promise.all([
+const [
+  template,
+  settingsScript,
+  contributionsScript,
+  physicsScript,
+  celebrationScript,
+  compiledScript,
+  animationScript,
+  svgScript,
+  svgMotionScript,
+  svgLightsScript,
+  realText,
+  sampleText,
+  configText,
+  licenseText,
+] = await Promise.all([
   fs.readFile(path.join(projectDirectory, 'templates/game.html'), 'utf8'),
   fs.readFile(path.join(outputDirectory, 'settings.js'), 'utf8'),
   fs.readFile(path.join(outputDirectory, 'contributions.js'), 'utf8'),
@@ -53,43 +68,57 @@ parseContributionData(realData);
 parseContributionData(sampleData);
 
 function renderScript(rootId) {
-  return `/*\n${licenseText.trim()}\n*/\n(() => {\n'use strict';\nconst pinballRootId = ${JSON.stringify(rootId)};\n${settingsScript}\n${contributionsScript}\n${physicsScript}\n${celebrationScript}\n${compiledScript}\n})();`.replace(/<\/script/gi, '<\\/script');
+  return `/*\n${licenseText.trim()}\n*/\n(() => {\n'use strict';\nconst pinballRootId = ${JSON.stringify(rootId)};\n${settingsScript}\n${contributionsScript}\n${physicsScript}\n${celebrationScript}\n${compiledScript}\n})();`.replace(
+    /<\/script/gi,
+    '<\\/script',
+  );
 }
 
 function summarize(data) {
-  return data.levels.flat().reduce((totals, level) => {
-    if (level !== null && level > 0) {
-      totals.activeDays += 1;
-      totals.maxPoints += config.points[level];
-      if (!Number.isSafeInteger(totals.maxPoints)) {
-        throw new Error('草の得点合計が安全な整数の上限を超えています。pointsを小さくしてください。');
+  return data.levels.flat().reduce(
+    (totals, level) => {
+      if (level !== null && level > 0) {
+        totals.activeDays += 1;
+        totals.maxPoints += config.points[level];
+        if (!Number.isSafeInteger(totals.maxPoints)) {
+          throw new Error('The total score exceeds the safe integer limit. Reduce the point values.');
+        }
       }
-    }
-    return totals;
-  }, { activeDays: 0, maxPoints: 0 });
+      return totals;
+    },
+    { activeDays: 0, maxPoints: 0 },
+  );
 }
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, character => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  })[character]);
+  return String(value).replace(
+    /[&<>"']/g,
+    (character) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[character],
+  );
 }
 
 function renderFragment({ rootId, data, note, canvasLabel, settings = config, collisionDemo = false }) {
   parsePinballConfig(settings);
   const replacements = {
-    '__ROOT_ID__': rootId,
-    '__COLLISION_DEMO__': String(collisionDemo),
-    '__DATA_JSON__': JSON.stringify(data).replace(/</g, '\\u003c'),
-    '__CONFIG_JSON__': JSON.stringify(settings).replace(/</g, '\\u003c'),
-    '__DATA_NOTE__': escapeHtml(note),
-    '__CANVAS_LABEL__': escapeHtml(canvasLabel),
-    '__GAME_SCRIPT__': renderScript(rootId),
-    '__OVER_INTERVAL__': String(settings.overInterval),
-    '__PARTY_SCORE__': String(settings.partyScore),
+    __ROOT_ID__: rootId,
+    __COLLISION_DEMO__: String(collisionDemo),
+    __DATA_JSON__: JSON.stringify(data).replace(/</g, '\\u003c'),
+    __CONFIG_JSON__: JSON.stringify(settings).replace(/</g, '\\u003c'),
+    __DATA_NOTE__: escapeHtml(note),
+    __CANVAS_LABEL__: escapeHtml(canvasLabel),
+    __GAME_SCRIPT__: renderScript(rootId),
+    __OVER_INTERVAL__: String(settings.overInterval),
+    __PARTY_SCORE__: String(settings.partyScore),
     ...Object.fromEntries(settings.points.slice(1).map((points, index) => [`__POINTS_${index + 1}__`, String(points)])),
   };
-  return template.replace(/__[A-Z_0-9]+__/g, placeholder => {
+  return template.replace(/__[A-Z_0-9]+__/g, (placeholder) => {
     if (!(placeholder in replacements)) throw new Error(`Unknown template placeholder: ${placeholder}`);
     return replacements[placeholder];
   });
@@ -98,7 +127,7 @@ function renderFragment({ rootId, data, note, canvasLabel, settings = config, co
 function renderPage(title, fragment) {
   const palette = config.palettes[config.theme === 'light' ? 'light' : 'dark'];
   return `<!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -138,32 +167,30 @@ const realUsername = metadataText(realData.username);
 const realRetrievedAt = metadataText(realData.retrievedAt);
 const realStart = metadataText(realData.start);
 const realEnd = metadataText(realData.end);
-const realKind = realUsername ? `${realUsername} · 実データ` : '活動データ';
-const realNote = realRetrievedAt ? `${realKind}（${realRetrievedAt.replaceAll('-', '/')}取得）` : realKind;
-const realPeriod = realStart && realEnd ? `${realStart}から${realEnd}の` : '';
-const realSubject = realUsername || realPeriod
-  ? `${realUsername ? `${realUsername}の` : ''}${realPeriod}実際の草`
-  : '活動データ';
+const realKind = realUsername ? `${realUsername} · Activity snapshot` : 'Contribution data';
+const realNote = realRetrievedAt ? `${realKind} (retrieved ${realRetrievedAt.replaceAll('-', '/')})` : realKind;
+const realPeriod = realStart && realEnd ? ` from ${realStart} to ${realEnd}` : '';
+const realSubject = `Contribution graph${realUsername ? ` for ${realUsername}` : ''}${realPeriod}`;
 const realTotals = summarize(realData);
 const sampleTotals = summarize(sampleData);
-const pointDescription = config.points.slice(1).join('・');
-const behaviorLabel = `${config.overInterval}点刻みの境界を超えるとOVER演出。${config.partyScore}点を超えると自動で5玉と照明。全消去後にFINAL SCOREで最終得点を表示。テーマをダークとライトに切り替えられる`;
-const realLabel = `${realSubject}。活動がある${realTotals.activeDays}マスを消し、活動レベルごとに${pointDescription}点を加算。全消去で${realTotals.maxPoints}点。${behaviorLabel}`;
-const sampleLabel = `${sampleTotals.activeDays}マスのサンプル。活動レベルごとに${pointDescription}点を加算し、全消去で${sampleTotals.maxPoints}点。${behaviorLabel}`;
-const collisionLabel = `初めから5玉で遊ぶ${sampleTotals.activeDays}マスのサンプル。玉同士も弾性衝突して軌道が変わる。活動レベルごとに${pointDescription}点を加算し、全消去で${sampleTotals.maxPoints}点。${config.overInterval}点刻みの境界を超えるとOVER演出。照明、全消去後のFINAL SCORE、テーマ切り替えを試せる`;
-const superPartyLabel = `${collisionLabel}。1000点を超えると一度だけSUPER PARTY TIMEになり、5玉から10玉へ増える。玉同士の弾性衝突は続く`;
+const pointDescription = config.points.slice(1).join(', ');
+const behaviorLabel = `OVER milestones appear above each ${config.overInterval}-point boundary. Above ${config.partyScore} points, five balls and party lights start automatically. Clearing all cells reveals the final score. Dark and light themes are available.`;
+const realLabel = `${realSubject}. Clear ${realTotals.activeDays} active cells, worth ${pointDescription} points by activity level. Maximum score: ${realTotals.maxPoints}. ${behaviorLabel}`;
+const sampleLabel = `Sample with ${sampleTotals.activeDays} active cells, worth ${pointDescription} points by activity level. Maximum score: ${sampleTotals.maxPoints}. ${behaviorLabel}`;
+const collisionLabel = `Sample with ${sampleTotals.activeDays} active cells and five balls at the start. Elastic ball collisions change their paths. Cells are worth ${pointDescription} points by activity level. Maximum score: ${sampleTotals.maxPoints}. OVER milestones appear above each ${config.overInterval}-point boundary. Includes party lights, a final score, and theme selection.`;
+const superPartyLabel = `${collisionLabel} Above 1000 points, SUPER PARTY TIME increases the ball count from five to ten once. Ball collisions remain enabled.`;
 const fragments = {
   real: renderFragment({ rootId: 'contribution-pinball-real', data: realData, note: realNote, canvasLabel: realLabel }),
   sample: renderFragment({
     rootId: 'contribution-pinball-score',
     data: sampleData,
-    note: `全${sampleTotals.activeDays}マスのサンプル · 仮の配点`,
+    note: `Full grid sample · ${sampleTotals.activeDays} active cells`,
     canvasLabel: sampleLabel,
   }),
   collision: renderFragment({
     rootId: 'contribution-pinball-collisions',
     data: sampleData,
-    note: '玉同士の衝突サンプル · 初めから5玉',
+    note: 'Ball collision sample · Starts with five balls',
     canvasLabel: collisionLabel,
     settings: { ...config, ballCollisions: true },
     collisionDemo: true,
@@ -171,7 +198,7 @@ const fragments = {
   superParty: renderFragment({
     rootId: 'contribution-pinball-super-party',
     data: sampleData,
-    note: 'SUPER PARTYサンプル · 初めから5玉、1000点超えで10玉',
+    note: 'SUPER PARTY sample · Five balls, ten above 1000 points',
     canvasLabel: superPartyLabel,
     settings: { ...config, ballCollisions: true, partyScore: 500, superPartyScore: 1000 },
     collisionDemo: true,
@@ -183,10 +210,22 @@ await fs.writeFile(path.join(outputDirectory, 'real.fragment.html'), fragments.r
 await fs.writeFile(path.join(outputDirectory, 'sample.fragment.html'), fragments.sample);
 await fs.writeFile(path.join(outputDirectory, 'collision.fragment.html'), fragments.collision);
 await fs.writeFile(path.join(outputDirectory, 'super-party.fragment.html'), fragments.superParty);
-await fs.writeFile(path.join(outputDirectory, 'index.html'), renderPage('芝ピンボール · 実データ', fragments.real));
-await fs.writeFile(path.join(outputDirectory, 'sample.html'), renderPage('芝ピンボール · 全マスのサンプル', fragments.sample));
-await fs.writeFile(path.join(outputDirectory, 'collisions.html'), renderPage('芝ピンボール · 5玉の弾性衝突サンプル', fragments.collision));
-await fs.writeFile(path.join(outputDirectory, 'super-party.html'), renderPage('芝ピンボール · 1000点超えで10玉のSUPER PARTY', fragments.superParty));
+await fs.writeFile(
+  path.join(outputDirectory, 'index.html'),
+  renderPage('Contribution Party · Activity snapshot', fragments.real),
+);
+await fs.writeFile(
+  path.join(outputDirectory, 'sample.html'),
+  renderPage('Contribution Party · Full grid sample', fragments.sample),
+);
+await fs.writeFile(
+  path.join(outputDirectory, 'collisions.html'),
+  renderPage('Contribution Party · Five-ball collision sample', fragments.collision),
+);
+await fs.writeFile(
+  path.join(outputDirectory, 'super-party.html'),
+  renderPage('Contribution Party · SUPER PARTY sample', fragments.superParty),
+);
 
 const actionDirectory = path.join(projectDirectory, '.action');
 const actionRuntime = `/*\n${licenseText.trim()}\n*/\n${settingsScript}\n${contributionsScript}\n${physicsScript}\n${animationScript}\n${svgScript}\n${svgMotionScript}\n${svgLightsScript}\nexport { parsePinballConfig, parseContributionData, createPinballTimeline, renderContributionSvg };\n`;

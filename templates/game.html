@@ -1,4 +1,4 @@
-<div id="__ROOT_ID__" data-pinball-root data-pinball-collision-demo="__COLLISION_DEMO__" lang="ja">
+<div id="__ROOT_ID__" data-pinball-root data-pinball-collision-demo="__COLLISION_DEMO__" lang="en">
   <style>
     #__ROOT_ID__ { display: grid; gap: calc(var(--font-size-base, 14px) * .75); padding: calc(var(--font-size-base, 14px) * .75); background: var(--pinball-background); color: var(--pinball-foreground); }
     #__ROOT_ID__ .pinball-toolbar, #__ROOT_ID__ .score-row, #__ROOT_ID__ .score-legend { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--font-size-base, 14px) * .5); }
@@ -18,22 +18,22 @@
     #__ROOT_ID__ [data-pinball-swatch="4"] { background: var(--pinball-grass-4); }
   </style>
   <div class="pinball-toolbar">
-    <label class="form-label text-small" for="__ROOT_ID__-theme">テーマ</label>
+    <label class="form-label text-small" for="__ROOT_ID__-theme">Theme</label>
     <select id="__ROOT_ID__-theme" class="form-select" data-pinball-theme>
-      <option value="auto">端末に合わせる</option>
-      <option value="dark">ダーク</option>
-      <option value="light">ライト</option>
+      <option value="auto">System</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
     </select>
   </div>
   <div class="pinball-toolbar">
-    <button type="button" class="btn" data-pinball-play>発射</button>
-    <button type="button" class="btn btn-primary" data-pinball-party>パーティー！ ×5</button>
-    <button type="button" class="btn" data-pinball-restart>打ち直す</button>
+    <button type="button" class="btn" data-pinball-play>Launch</button>
+    <button type="button" class="btn btn-primary" data-pinball-party>Party! ×5</button>
+    <button type="button" class="btn" data-pinball-restart>Restart</button>
     <span class="text-small tabular-nums pinball-status" data-pinball-status></span>
   </div>
   <div class="score-row">
-    <span>得点 <span class="tabular-nums" data-pinball-score>0</span> pt</span>
-    <span class="text-small text-muted score-goal" data-pinball-goal>次：__OVER_INTERVAL__ OVER · __PARTY_SCORE__点超えで5玉</span>
+    <span>Score <span class="tabular-nums" data-pinball-score>0</span> pt</span>
+    <span class="text-small text-muted score-goal" data-pinball-goal>Next: __OVER_INTERVAL__ OVER · 5 balls above __PARTY_SCORE__ pt</span>
   </div>
   <div class="pinball-stage">
     <canvas width="880" height="208" role="img" aria-label="__CANVAS_LABEL__"></canvas>
@@ -43,11 +43,11 @@
       <div class="text-small" data-pinball-award-detail></div>
     </div>
   </div>
-  <div class="text-small score-legend" aria-label="仮の配点">
-    <span><span class="score-swatch" data-pinball-swatch="1" aria-hidden="true"></span><span data-pinball-points="1">__POINTS_1__点</span></span>
-    <span><span class="score-swatch" data-pinball-swatch="2" aria-hidden="true"></span><span data-pinball-points="2">__POINTS_2__点</span></span>
-    <span><span class="score-swatch" data-pinball-swatch="3" aria-hidden="true"></span><span data-pinball-points="3">__POINTS_3__点</span></span>
-    <span><span class="score-swatch" data-pinball-swatch="4" aria-hidden="true"></span><span data-pinball-points="4">__POINTS_4__点</span></span>
+  <div class="text-small score-legend" aria-label="Points per activity level">
+    <span><span class="score-swatch" data-pinball-swatch="1" aria-hidden="true"></span><span data-pinball-points="1">__POINTS_1__ pt</span></span>
+    <span><span class="score-swatch" data-pinball-swatch="2" aria-hidden="true"></span><span data-pinball-points="2">__POINTS_2__ pt</span></span>
+    <span><span class="score-swatch" data-pinball-swatch="3" aria-hidden="true"></span><span data-pinball-points="3">__POINTS_3__ pt</span></span>
+    <span><span class="score-swatch" data-pinball-swatch="4" aria-hidden="true"></span><span data-pinball-points="4">__POINTS_4__ pt</span></span>
     <span class="text-muted">__DATA_NOTE__</span>
   </div>
   <script type="application/json" data-pinball-data>__DATA_JSON__</script>

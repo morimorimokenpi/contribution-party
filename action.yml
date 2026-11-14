@@ -19,11 +19,11 @@ inputs:
   seed:
     description: Deterministic random seed from 0 to 4294967295.
     required: false
-    default: '1'
+    default: "1"
   initial_balls:
     description: Number of balls at the start of the animation, either 1 or 5.
     required: false
-    default: '1'
+    default: "1"
 
 outputs:
   dark-svg:

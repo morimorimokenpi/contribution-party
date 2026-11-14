@@ -92,10 +92,14 @@ test('custom palettes reach Canvas, lighting, legend, and standalone styles', ()
   const game = createGame('real', { config, recordPaint: true, includePage: true });
   assert.deepEqual(Array.from(game.state().colors), palette.grass);
   assert.equal(game.state().palette.ball, palette.ball);
-  assert(game.paintLog.some(operation => operation.method === 'fill' && operation.fillStyle === palette.ball));
-  assert(game.paintLog.some(operation => operation.method === 'strokeRect' && operation.strokeStyle === palette.border));
+  assert(game.paintLog.some((operation) => operation.method === 'fill' && operation.fillStyle === palette.ball));
+  assert(
+    game.paintLog.some((operation) => operation.method === 'strokeRect' && operation.strokeStyle === palette.border),
+  );
   for (const level of [0, 1, 2, 4]) {
-    assert(game.paintLog.some(operation => operation.method === 'fill' && operation.fillStyle === palette.grass[level]));
+    assert(
+      game.paintLog.some((operation) => operation.method === 'fill' && operation.fillStyle === palette.grass[level]),
+    );
   }
   const rootStyles = Array.from(game.root.style.properties.values());
   assert(rootStyles.includes(palette.background));
@@ -111,19 +115,17 @@ test('custom palettes reach Canvas, lighting, legend, and standalone styles', ()
   assert(pageStyles.includes(palette.foreground));
   for (let level = 1; level <= 4; level++) {
     const swatch = game.nodes['[data-pinball-swatch="' + level + '"]'].style;
-    assert([
-      ...swatch.properties.values(), swatch.background, swatch.backgroundColor,
-    ].includes(palette.grass[level]));
-    assert.equal(game.nodes['[data-pinball-points="' + level + '"]'].textContent, config.points[level] + '点');
+    assert([...swatch.properties.values(), swatch.background, swatch.backgroundColor].includes(palette.grass[level]));
+    assert.equal(game.nodes['[data-pinball-points="' + level + '"]'].textContent, config.points[level] + ' pt');
   }
   game.click('party');
   freezeBalls(game);
   game.advance(0);
   game.advance(50);
-  assert(game.state().confetti.some(particle => particle.color === palette.celebration));
-  const stops = game.gradients.flatMap(gradient => gradient.stops).map(stop => stop.color.replace(/\s/g, ''));
+  assert(game.state().confetti.some((particle) => particle.color === palette.celebration));
+  const stops = game.gradients.flatMap((gradient) => gradient.stops).map((stop) => stop.color.replace(/\s/g, ''));
   for (const rgb of ['16,32,48', '64,80,96', '112,128,144']) {
-    assert(stops.some(color => color.startsWith('rgba(' + rgb + ',')));
+    assert(stops.some((color) => color.startsWith('rgba(' + rgb + ',')));
   }
 });
 
@@ -137,12 +139,23 @@ test('configured points and strict thresholds control OVER and automatic party',
   assert.equal(game.state().autoPartyScore, 80);
   reachScore(game, 50);
   assert.equal(awards(game).length, 0);
-  hitCell(game, game.state().cells.find(cell => cell.alive && cell.level === 1));
-  assert.deepEqual(awards(game).filter(award => award.kind === 'over').map(award => award.threshold), [50]);
+  hitCell(
+    game,
+    game.state().cells.find((cell) => cell.alive && cell.level === 1),
+  );
+  assert.deepEqual(
+    awards(game)
+      .filter((award) => award.kind === 'over')
+      .map((award) => award.threshold),
+    [50],
+  );
   reachScore(game, 80);
   assert.equal(game.state().balls.length, 1);
   assert.equal(game.state().autoPartyTriggered, false);
-  hitCell(game, game.state().cells.find(cell => cell.alive && cell.level === 1));
+  hitCell(
+    game,
+    game.state().cells.find((cell) => cell.alive && cell.level === 1),
+  );
   assert.equal(game.state().score, 81);
   assert.equal(game.state().balls.length, 5);
   assert.equal(game.state().autoPartyTriggered, true);
@@ -176,18 +189,18 @@ test('large safe scores collapse pending OVER effects and preserve a pending PAR
   assert.equal(game.state().award.threshold, 100);
   hitCell(game, game.state().cells[1]);
   assert.equal(game.state().balls.length, 5);
-  assert.equal(game.state().pendingAwards.filter(award => award.kind === 'party').length, 1);
+  assert.equal(game.state().pendingAwards.filter((award) => award.kind === 'party').length, 1);
   hitCell(game, game.state().cells[2]);
   assert.equal(game.state().score, 1_000_000_000_501);
   assert.equal(game.state().nextMilestone, 1_000_000_000_600);
   const pending = game.state().pendingAwards;
-  assert(pending.filter(award => award.kind === 'over').length <= 32);
-  assert.equal(pending.filter(award => award.kind === 'party').length, 1);
+  assert(pending.filter((award) => award.kind === 'over').length <= 32);
+  assert.equal(pending.filter((award) => award.kind === 'party').length, 1);
   assert.equal(pending.at(-1).threshold, 1_000_000_000_500);
   game.click('play');
   finishFrames(game);
   assert.equal(game.state().finalScore, 1_000_000_000_501);
-  assert.equal(game.awardLog.filter(label => label === 'PARTY TIME!').length, 1);
+  assert.equal(game.awardLog.filter((label) => label === 'PARTY TIME!').length, 1);
   assert(game.awardLog.includes('1000000000500 OVER'));
 });
 
@@ -201,16 +214,13 @@ test('the last safe OVER boundary terminates and unsafe total scores are rejecte
   assert.equal(game.state().score, Number.MAX_SAFE_INTEGER);
   assert.equal(game.state().nextMilestone, null);
   assert.equal(game.state().award.threshold, Number.MAX_SAFE_INTEGER - 1);
-  assert.match(game.nodes['[data-pinball-goal]'].textContent, /次のOVERなし/);
+  assert.match(game.nodes['[data-pinball-goal]'].textContent, /No more OVER/);
   assert.equal(game.state().balls.length, 1);
   hitCell(game, game.state().cells[1]);
   game.click('play');
   finishFrames(game);
   assert.equal(game.state().finalScore, Number.MAX_SAFE_INTEGER);
-  assert.throws(
-    () => createGame('sample', { config, data: { levels: [[1, 1]] } }),
-    /草の得点合計/,
-  );
+  assert.throws(() => createGame('sample', { config, data: { levels: [[1, 1]] } }), /total score/);
 });
 
 test('standalone local preference is restored and unavailable storage is tolerated', () => {
@@ -235,24 +245,60 @@ test('standalone local preference is restored and unavailable storage is tolerat
 
 test('invalid configuration values and unknown keys are rejected', () => {
   const mutations = [
-    config => { config.theme = 'sepia'; },
-    config => { delete config.theme; },
-    config => { config.unknownOption = true; },
-    config => { config.overInterval = 0; },
-    config => { config.overInterval = 1.5; },
-    config => { config.partyScore = -1; },
-    config => { config.points = [0, 1, 3, 5]; },
-    config => { config.points[0] = 1; },
-    config => { config.points[1] = 1.5; },
-    config => { config.points[1] = Number.MAX_SAFE_INTEGER + 1; },
-    config => { config.overInterval = Number.MAX_SAFE_INTEGER + 1; },
-    config => { config.partyScore = Number.MAX_SAFE_INTEGER + 1; },
-    config => { config.palettes.dark.background = 'red'; },
-    config => { config.palettes.light.ball = '#fff'; },
-    config => { delete config.palettes.dark.surface; },
-    config => { config.palettes.dark.extra = '#112233'; },
-    config => { config.palettes.light.grass.pop(); },
-    config => { config.palettes.dark.lights.pop(); },
+    (config) => {
+      config.theme = 'sepia';
+    },
+    (config) => {
+      delete config.theme;
+    },
+    (config) => {
+      config.unknownOption = true;
+    },
+    (config) => {
+      config.overInterval = 0;
+    },
+    (config) => {
+      config.overInterval = 1.5;
+    },
+    (config) => {
+      config.partyScore = -1;
+    },
+    (config) => {
+      config.points = [0, 1, 3, 5];
+    },
+    (config) => {
+      config.points[0] = 1;
+    },
+    (config) => {
+      config.points[1] = 1.5;
+    },
+    (config) => {
+      config.points[1] = Number.MAX_SAFE_INTEGER + 1;
+    },
+    (config) => {
+      config.overInterval = Number.MAX_SAFE_INTEGER + 1;
+    },
+    (config) => {
+      config.partyScore = Number.MAX_SAFE_INTEGER + 1;
+    },
+    (config) => {
+      config.palettes.dark.background = 'red';
+    },
+    (config) => {
+      config.palettes.light.ball = '#fff';
+    },
+    (config) => {
+      delete config.palettes.dark.surface;
+    },
+    (config) => {
+      config.palettes.dark.extra = '#112233';
+    },
+    (config) => {
+      config.palettes.light.grass.pop();
+    },
+    (config) => {
+      config.palettes.dark.lights.pop();
+    },
   ];
   for (const mutate of mutations) {
     const config = configuration();

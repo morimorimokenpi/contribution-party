@@ -5,12 +5,16 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "lint": "biome lint . --error-on-warnings --diagnostic-level=warn",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
     "check": "tsc --noEmit",
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
     "generate": "node scripts/generate.mjs"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.6.7",
     "typescript": "6.0.3"
   },
   "description": "Generate an animated contribution pinball SVG for GitHub READMEs.",

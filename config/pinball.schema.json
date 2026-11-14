@@ -62,7 +62,17 @@
     "palette": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["background", "foreground", "mutedForeground", "surface", "border", "ball", "grass", "celebration", "lights"],
+      "required": [
+        "background",
+        "foreground",
+        "mutedForeground",
+        "surface",
+        "border",
+        "ball",
+        "grass",
+        "celebration",
+        "lights"
+      ],
       "properties": {
         "background": { "$ref": "#/$defs/color" },
         "foreground": { "$ref": "#/$defs/color" },

@@ -39,6 +39,7 @@ function resolveExistingParent(target) {
 }
 
 function workspacePath(workspace, value, name) {
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: Reject control characters in workspace paths.
   if (/[\u0000-\u001f\u007f]/u.test(value) || path.isAbsolute(value)) {
     throw new Error(`${name} must be a workspace-relative path without control characters.`);
   }
@@ -61,7 +62,11 @@ export function createActionRequest(environment, actionDirectory = installedActi
   if (initialBalls !== '1' && initialBalls !== '5') {
     throw new Error('initial_balls must be 1 or 5.');
   }
-  const outputDirectory = workspacePath(workspace, readInput(environment, 'OUTPUT_DIR', 'dist') || 'dist', 'output_dir');
+  const outputDirectory = workspacePath(
+    workspace,
+    readInput(environment, 'OUTPUT_DIR', 'dist') || 'dist',
+    'output_dir',
+  );
   const configPath = configInput
     ? workspacePath(workspace, configInput, 'config_file')
     : path.join(actionDirectory, 'config/pinball.json');
@@ -70,16 +75,25 @@ export function createActionRequest(environment, actionDirectory = installedActi
     outputDirectory,
     arguments: [
       path.join(actionDirectory, 'scripts/generate.mjs'),
-      '--data', workspacePath(workspace, dataInput, 'data_file'),
-      '--config', configPath,
-      '--output-dir', outputDirectory,
-      '--seed', String(Number(seed)),
-      '--initial-balls', initialBalls,
+      '--data',
+      workspacePath(workspace, dataInput, 'data_file'),
+      '--config',
+      configPath,
+      '--output-dir',
+      outputDirectory,
+      '--seed',
+      String(Number(seed)),
+      '--initial-balls',
+      initialBalls,
     ],
   };
 }
 
-export function runAction({ environment = process.env, actionDirectory = installedActionDirectory, execute = spawnSync } = {}) {
+export function runAction({
+  environment = process.env,
+  actionDirectory = installedActionDirectory,
+  execute = spawnSync,
+} = {}) {
   const request = createActionRequest(environment, actionDirectory);
   if (!environment.GITHUB_OUTPUT) throw new Error('GITHUB_OUTPUT is required when running the action entry point.');
   const result = execute(process.execPath, request.arguments, {
@@ -92,13 +106,20 @@ export function runAction({ environment = process.env, actionDirectory = install
   if (result.status !== 0) {
     throw new Error(`SVG generation failed (${result.signal || `exit ${result.status}`}).`);
   }
-  const outputs = Object.fromEntries(Object.entries(fileNames).map(([name, fileName]) => {
-    const filePath = path.join(request.outputDirectory, fileName);
-    if (!fs.statSync(filePath).isFile()) throw new Error(`The generated output is not a file: ${fileName}`);
-    return [name, filePath];
-  }));
-  fs.appendFileSync(environment.GITHUB_OUTPUT,
-    Object.entries(outputs).map(([name, filePath]) => `${name}=${filePath}\n`).join(''), 'utf8');
+  const outputs = Object.fromEntries(
+    Object.entries(fileNames).map(([name, fileName]) => {
+      const filePath = path.join(request.outputDirectory, fileName);
+      if (!fs.statSync(filePath).isFile()) throw new Error(`The generated output is not a file: ${fileName}`);
+      return [name, filePath];
+    }),
+  );
+  fs.appendFileSync(
+    environment.GITHUB_OUTPUT,
+    Object.entries(outputs)
+      .map(([name, filePath]) => `${name}=${filePath}\n`)
+      .join(''),
+    'utf8',
+  );
   return outputs;
 }
 

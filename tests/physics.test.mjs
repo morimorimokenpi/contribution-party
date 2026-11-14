@@ -9,8 +9,10 @@ const resolveBallCollision = vm.runInNewContext(physics + '\nresolveBallCollisio
 const radius = 6.75;
 
 function near(actual, expected, label) {
-  assert(Math.abs(actual - expected) <= 1e-10 * Math.max(1, Math.abs(expected)),
-    label + ': expected ' + expected + ', received ' + actual);
+  assert(
+    Math.abs(actual - expected) <= 1e-10 * Math.max(1, Math.abs(expected)),
+    label + ': expected ' + expected + ', received ' + actual,
+  );
 }
 
 function quantities(bodies) {
@@ -54,8 +56,8 @@ test('oblique collisions exchange normal velocity and preserve tangential veloci
   const a = { x: 0, y: 0, vx: 100, vy: 30 };
   const b = { x: 9, y: 9, vx: -20, vy: -40 };
   const before = [{ ...a }, { ...b }];
-  const normal = body => (body.vx + body.vy) / Math.SQRT2;
-  const tangent = body => (-body.vx + body.vy) / Math.SQRT2;
+  const normal = (body) => (body.vx + body.vy) / Math.SQRT2;
+  const tangent = (body) => (-body.vx + body.vy) / Math.SQRT2;
   assert.equal(resolveBallCollision(a, b, radius), true);
   near(normal(a), normal(before[1]), 'first normal velocity');
   near(normal(b), normal(before[0]), 'second normal velocity');
@@ -83,7 +85,11 @@ test('separated circles are untouched and overlapping circles moving apart are o
 });
 
 test('coincident centers remain finite for moving, identical, and stationary velocities', () => {
-  for (const velocities of [[120, -80, -30, 90], [12, -8, 12, -8], [0, 0, 0, 0]]) {
+  for (const velocities of [
+    [120, -80, -30, 90],
+    [12, -8, 12, -8],
+    [0, 0, 0, 0],
+  ]) {
     const a = { x: 10, y: 20, vx: velocities[0], vy: velocities[1] };
     const b = { x: 10, y: 20, vx: velocities[2], vy: velocities[3] };
     const before = [{ ...a }, { ...b }];
@@ -97,36 +103,44 @@ test('coincident centers remain finite for moving, identical, and stationary vel
 });
 
 for (const reducedMotion of [false, true]) {
-  test('collision demo starts paused with five balls and collides within one second, reduced motion ' + reducedMotion, () => {
-    const fixture = readFixture('collision');
-    assert.equal(fixture.config.ballCollisions, true);
-    assert.equal(fixture.collisionDemo, true);
-    assert.deepEqual(fixture.data, readFixture('sample').data);
-    const game = createGame('collision', { reducedMotion, recordCollisions: true });
-    assert.equal(game.state().balls.length, 5);
-    assert.equal(game.state().running, false);
-    assert.equal(game.hasFrame(), false);
-    game.click('play');
-    let time = 0;
-    for (; time <= 1000 && game.collisionLog.length === 0; time += 1000 / 60) game.advance(time);
-    assert(game.collisionLog.length > 0, 'The initial arrangement produces an actual ball collision');
-    for (const collision of game.collisionLog) conserve(collision.before, collision.after);
-    assert(game.collisionLog.some(({ before, after }) => before.some((body, index) =>
-      Math.abs(body.vx - after[index].vx) > 1e-6 || Math.abs(body.vy - after[index].vy) > 1e-6)));
-    if (reducedMotion) {
-      assert.equal(game.state().sparks.length, 0);
-    } else {
-      assert(game.state().sparks.some(spark => spark.color === fixture.config.palettes.dark.celebration));
-    }
-    game.click('play');
-    assert.equal(game.hasFrame(), false);
-    const paused = JSON.stringify(game.state().balls);
-    game.selectTheme('light');
-    assert.equal(JSON.stringify(game.state().balls), paused);
-    game.click('restart');
-    assert.equal(game.state().balls.length, 5);
-    assert.equal(game.state().score, 0);
-  });
+  test(
+    'collision demo starts paused with five balls and collides within one second, reduced motion ' + reducedMotion,
+    () => {
+      const fixture = readFixture('collision');
+      assert.equal(fixture.config.ballCollisions, true);
+      assert.equal(fixture.collisionDemo, true);
+      assert.deepEqual(fixture.data, readFixture('sample').data);
+      const game = createGame('collision', { reducedMotion, recordCollisions: true });
+      assert.equal(game.state().balls.length, 5);
+      assert.equal(game.state().running, false);
+      assert.equal(game.hasFrame(), false);
+      game.click('play');
+      let time = 0;
+      for (; time <= 1000 && game.collisionLog.length === 0; time += 1000 / 60) game.advance(time);
+      assert(game.collisionLog.length > 0, 'The initial arrangement produces an actual ball collision');
+      for (const collision of game.collisionLog) conserve(collision.before, collision.after);
+      assert(
+        game.collisionLog.some(({ before, after }) =>
+          before.some(
+            (body, index) => Math.abs(body.vx - after[index].vx) > 1e-6 || Math.abs(body.vy - after[index].vy) > 1e-6,
+          ),
+        ),
+      );
+      if (reducedMotion) {
+        assert.equal(game.state().sparks.length, 0);
+      } else {
+        assert(game.state().sparks.some((spark) => spark.color === fixture.config.palettes.dark.celebration));
+      }
+      game.click('play');
+      assert.equal(game.hasFrame(), false);
+      const paused = JSON.stringify(game.state().balls);
+      game.selectTheme('light');
+      assert.equal(JSON.stringify(game.state().balls), paused);
+      game.click('restart');
+      assert.equal(game.state().balls.length, 5);
+      assert.equal(game.state().score, 0);
+    },
+  );
 }
 
 test('ball collisions are optional, default off, and reject non-boolean configuration', () => {
@@ -142,7 +156,7 @@ test('ball collisions are optional, default off, and reject non-boolean configur
   }
 });
 
-test('collision demo clears all sample grass and settles with finite conserved total energy', t => {
+test('collision demo clears all sample grass and settles with finite conserved total energy', (t) => {
   const game = createGame('collision', { seed: 1 });
   const initialEnergy = quantities(game.state().balls).energy;
   const maximumSpeed = Math.sqrt(initialEnergy);
@@ -157,8 +171,11 @@ test('collision demo clears all sample grass and settles with finite conserved t
     const state = game.state();
     assert.equal(state.balls.length, 5);
     assert(state.remaining >= 0 && state.remaining <= previousRemaining);
-    assert.equal(state.remaining, state.cells.filter(cell => cell.alive).length);
-    assert.equal(state.score, state.cells.reduce((sum, cell) => sum + (cell.alive ? 0 : state.points[cell.level]), 0));
+    assert.equal(state.remaining, state.cells.filter((cell) => cell.alive).length);
+    assert.equal(
+      state.score,
+      state.cells.reduce((sum, cell) => sum + (cell.alive ? 0 : state.points[cell.level]), 0),
+    );
     const energy = quantities(state.balls).energy;
     assert(Number.isFinite(energy));
     greatestEnergyDrift = Math.max(greatestEnergyDrift, Math.abs(energy - initialEnergy));
@@ -185,10 +202,18 @@ test('collision demo clears all sample grass and settles with finite conserved t
   assert.equal(final.clubIntensity, 0);
   assert.equal(final.sparks.length, 0);
   assert(greatestSpeed > 410, 'Elastic collisions can redistribute speed among the five balls');
-  assert.deepEqual(game.awardLog.filter(label => label.endsWith('OVER')),
-    Array.from({ length: 17 }, (_, index) => (index + 1) * 100 + ' OVER'));
-  t.diagnostic('Settled at ' + (elapsed / 1000).toFixed(1) + ' simulated seconds; maximum ball speed '
-    + greatestSpeed.toFixed(2) + '; maximum relative energy drift ' + (greatestEnergyDrift / initialEnergy).toExponential(2));
+  assert.deepEqual(
+    game.awardLog.filter((label) => label.endsWith('OVER')),
+    Array.from({ length: 17 }, (_, index) => (index + 1) * 100 + ' OVER'),
+  );
+  t.diagnostic(
+    'Settled at ' +
+      (elapsed / 1000).toFixed(1) +
+      ' simulated seconds; maximum ball speed ' +
+      greatestSpeed.toFixed(2) +
+      '; maximum relative energy drift ' +
+      (greatestEnergyDrift / initialEnergy).toExponential(2),
+  );
 });
 
 test('enabling collisions in the regular game safely separates the five balls spawned together', () => {
@@ -198,10 +223,10 @@ test('enabling collisions in the regular game safely separates the five balls sp
   game.click('party');
   const balls = game.state().balls;
   assert.equal(balls.length, 5);
-  assert(balls.every(ball => ball.x === balls[0].x && ball.y === balls[0].y));
+  assert(balls.every((ball) => ball.x === balls[0].x && ball.y === balls[0].y));
   const initialEnergy = quantities(balls).energy;
   for (let tick = 0; tick < 100; tick++) {
-    game.advance(tick * 1000 / 60);
+    game.advance((tick * 1000) / 60);
     const state = game.state();
     assert.equal(state.balls.length, 5);
     near(quantities(state.balls).energy, initialEnergy, 'total energy after a shared-position spawn');
