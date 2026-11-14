@@ -21,7 +21,7 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
 
-      # data/contributions.jsonは利用者が用意し、更新します。必要なら、この前に取得用stepを追加してください。
+      # Prepare and update data/contributions.json before this step.
       - name: Generate both SVG themes
         uses: morimorimokenpi/contribution-party@main
         with:
