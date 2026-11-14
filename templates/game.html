@@ -1,0 +1,58 @@
+<div id="__ROOT_ID__" data-pinball-root data-pinball-collision-demo="__COLLISION_DEMO__" lang="ja">
+  <style>
+    #__ROOT_ID__ { display: grid; gap: calc(var(--font-size-base, 14px) * .75); padding: calc(var(--font-size-base, 14px) * .75); background: var(--pinball-background); color: var(--pinball-foreground); }
+    #__ROOT_ID__ .pinball-toolbar, #__ROOT_ID__ .score-row, #__ROOT_ID__ .score-legend { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--font-size-base, 14px) * .5); }
+    #__ROOT_ID__ canvas { width: 100%; height: auto; display: block; background: var(--pinball-background); }
+    #__ROOT_ID__ .pinball-status, #__ROOT_ID__ .score-goal { margin-inline-start: auto; }
+    #__ROOT_ID__ .pinball-stage { position: relative; display: grid; align-items: center; container-type: inline-size; min-height: calc(var(--font-size-base, 14px) * 8); background: var(--pinball-background); }
+    #__ROOT_ID__ .score-award { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr); place-content: center; padding: calc(var(--font-size-base, 14px) * .5); text-align: center; pointer-events: none; color: var(--pinball-celebration); text-shadow: 0 0 18px var(--pinball-background), 0 0 5px var(--pinball-background); }
+    #__ROOT_ID__ .score-award[hidden] { display: none; }
+    #__ROOT_ID__ .score-award h1 { margin: 0; font-size: clamp(calc(var(--font-size-base, 14px) * 1.6), 8vw, calc(var(--font-size-base, 14px) * 3.2)); font-size: clamp(calc(var(--font-size-base, 14px) * 1.6), 8cqi, calc(var(--font-size-base, 14px) * 3.2)); line-height: 1.1; white-space: pre-line; overflow-wrap: anywhere; }
+    #__ROOT_ID__ [data-pinball-award-detail] { min-width: 0; line-height: 1.35; overflow-wrap: anywhere; }
+    #__ROOT_ID__ .score-legend > span { display: inline-flex; align-items: center; gap: calc(var(--font-size-base, 14px) * .25); }
+    #__ROOT_ID__ .score-swatch { display: inline-block; width: calc(var(--font-size-base, 14px) * .75); height: calc(var(--font-size-base, 14px) * .75); }
+    #__ROOT_ID__ .text-muted { color: var(--pinball-muted-foreground); }
+    #__ROOT_ID__ [data-pinball-swatch="1"] { background: var(--pinball-grass-1); }
+    #__ROOT_ID__ [data-pinball-swatch="2"] { background: var(--pinball-grass-2); }
+    #__ROOT_ID__ [data-pinball-swatch="3"] { background: var(--pinball-grass-3); }
+    #__ROOT_ID__ [data-pinball-swatch="4"] { background: var(--pinball-grass-4); }
+  </style>
+  <div class="pinball-toolbar">
+    <label class="form-label text-small" for="__ROOT_ID__-theme">テーマ</label>
+    <select id="__ROOT_ID__-theme" class="form-select" data-pinball-theme>
+      <option value="auto">端末に合わせる</option>
+      <option value="dark">ダーク</option>
+      <option value="light">ライト</option>
+    </select>
+  </div>
+  <div class="pinball-toolbar">
+    <button type="button" class="btn" data-pinball-play>発射</button>
+    <button type="button" class="btn btn-primary" data-pinball-party>パーティー！ ×5</button>
+    <button type="button" class="btn" data-pinball-restart>打ち直す</button>
+    <span class="text-small tabular-nums pinball-status" data-pinball-status></span>
+  </div>
+  <div class="score-row">
+    <span>得点 <span class="tabular-nums" data-pinball-score>0</span> pt</span>
+    <span class="text-small text-muted score-goal" data-pinball-goal>次：__OVER_INTERVAL__ OVER · __PARTY_SCORE__点超えで5玉</span>
+  </div>
+  <div class="pinball-stage">
+    <canvas width="880" height="208" role="img" aria-label="__CANVAS_LABEL__"></canvas>
+    <div class="score-award" hidden role="status" aria-live="polite" data-pinball-award>
+      <div class="text-small" hidden data-pinball-award-caption></div>
+      <h1 class="tabular-nums" data-pinball-award-title></h1>
+      <div class="text-small" data-pinball-award-detail></div>
+    </div>
+  </div>
+  <div class="text-small score-legend" aria-label="仮の配点">
+    <span><span class="score-swatch" data-pinball-swatch="1" aria-hidden="true"></span><span data-pinball-points="1">__POINTS_1__点</span></span>
+    <span><span class="score-swatch" data-pinball-swatch="2" aria-hidden="true"></span><span data-pinball-points="2">__POINTS_2__点</span></span>
+    <span><span class="score-swatch" data-pinball-swatch="3" aria-hidden="true"></span><span data-pinball-points="3">__POINTS_3__点</span></span>
+    <span><span class="score-swatch" data-pinball-swatch="4" aria-hidden="true"></span><span data-pinball-points="4">__POINTS_4__点</span></span>
+    <span class="text-muted">__DATA_NOTE__</span>
+  </div>
+  <script type="application/json" data-pinball-data>__DATA_JSON__</script>
+  <script type="application/json" data-pinball-config>__CONFIG_JSON__</script>
+  <script>
+__GAME_SCRIPT__
+  </script>
+</div>

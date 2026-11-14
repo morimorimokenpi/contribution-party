@@ -1,0 +1,59 @@
+{
+  "$schema": "../config/pinball.schema.json",
+  "theme": "dark",
+  "ballCollisions": true,
+  "points": [
+    0,
+    1,
+    3,
+    5,
+    10
+  ],
+  "overInterval": 100,
+  "partyScore": 500,
+  "superPartyScore": 1000,
+  "palettes": {
+    "dark": {
+      "background": "#0C1116",
+      "foreground": "#E6EDF3",
+      "mutedForeground": "#A5B1BD",
+      "surface": "#161B22",
+      "border": "#455D77",
+      "ball": "#0ABAB5",
+      "grass": [
+        "#161B22",
+        "#263444",
+        "#455D77",
+        "#62809C",
+        "#94B1C9"
+      ],
+      "celebration": "#0ABAB5",
+      "lights": [
+        "#0ABAB5",
+        "#64A1F4",
+        "#94B1C9"
+      ]
+    },
+    "light": {
+      "background": "#F6F8FA",
+      "foreground": "#1F2328",
+      "mutedForeground": "#59636E",
+      "surface": "#FFFFFF",
+      "border": "#B6C2CF",
+      "ball": "#008F8B",
+      "grass": [
+        "#EBEDF0",
+        "#D4E2EF",
+        "#A0BDD6",
+        "#6C94B7",
+        "#416B8E"
+      ],
+      "celebration": "#007C78",
+      "lights": [
+        "#0ABAB5",
+        "#3C7DD9",
+        "#94B1C9"
+      ]
+    }
+  }
+}

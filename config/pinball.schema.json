@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "芝ピンボールの設定",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["theme", "points", "overInterval", "partyScore", "palettes"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "theme": {
+      "enum": ["dark", "light", "auto"],
+      "description": "初回表示のテーマ。auto は端末の設定に合わせます。"
+    },
+    "ballCollisions": {
+      "type": "boolean",
+      "default": false,
+      "description": "複数の玉が互いに弾性衝突するか。省略時はfalseです。"
+    },
+    "points": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [{ "const": 0 }],
+      "items": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+      "description": "活動レベル0〜4の配点。先頭は0です。"
+    },
+    "overInterval": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "description": "OVER演出の得点間隔。"
+    },
+    "partyScore": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "自動パーティーが始まる境界。設定値を超えると始まります。"
+    },
+    "superPartyScore": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "default": null,
+      "description": "10玉になるSUPER PARTYの境界。数値はpartyScore以上を指定し、その値を超えると一度だけ発動します。nullまたは省略時は無効です。"
+    },
+    "palettes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dark", "light"],
+      "properties": {
+        "dark": { "$ref": "#/$defs/palette" },
+        "light": { "$ref": "#/$defs/palette" }
+      }
+    }
+  },
+  "$defs": {
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    },
+    "palette": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["background", "foreground", "mutedForeground", "surface", "border", "ball", "grass", "celebration", "lights"],
+      "properties": {
+        "background": { "$ref": "#/$defs/color" },
+        "foreground": { "$ref": "#/$defs/color" },
+        "mutedForeground": { "$ref": "#/$defs/color" },
+        "surface": { "$ref": "#/$defs/color" },
+        "border": { "$ref": "#/$defs/color" },
+        "ball": { "$ref": "#/$defs/color" },
+        "grass": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "$ref": "#/$defs/color" },
+          "description": "活動レベル0〜4の色。"
+        },
+        "celebration": { "$ref": "#/$defs/color" },
+        "lights": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/color" }
+        }
+      }
+    }
+  }
+}

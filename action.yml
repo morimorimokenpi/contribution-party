@@ -1,0 +1,36 @@
+name: Contribution Party
+description: Generate dark and light pinball contribution animations as SVG files.
+author: morimorimokenpi
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  data_file:
+    description: Workspace-relative path to contribution JSON containing levels. Data retrieval is handled by the caller.
+    required: true
+  config_file:
+    description: Workspace-relative path to configuration JSON. Omit to use the action's bundled configuration.
+    required: false
+  output_dir:
+    description: Workspace-relative directory for the generated SVG files.
+    required: false
+    default: dist
+  seed:
+    description: Deterministic random seed from 0 to 4294967295.
+    required: false
+    default: '1'
+  initial_balls:
+    description: Number of balls at the start of the animation, either 1 or 5.
+    required: false
+    default: '1'
+
+outputs:
+  dark-svg:
+    description: Absolute path to contribution-party-dark.svg in the workspace.
+  light-svg:
+    description: Absolute path to contribution-party-light.svg in the workspace.
+
+runs:
+  using: node24
+  main: scripts/action.mjs
